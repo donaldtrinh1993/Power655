@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101d35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Power 6/55">
+  <meta name="description" content="Tạo bộ số Power 6/55 trên iPhone, chạy không cần tài khoản hoặc kết nối dữ liệu.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <title>Power 6/55 — Bộ tạo số cho iPhone</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#0a1325; --surface:#14223a; --surface2:#192a45; --border:#30425e;
+      --text:#f5f8ff; --muted:#b8c6d8; --cyan:#61dcdb; --orange:#ffbd71;
+      --blue:#39b9d2; --ring:#d3f5ff;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    * { box-sizing:border-box; }
+    html { background:var(--bg); scroll-behavior:smooth; }
+    body { margin:0; min-width:280px; background: radial-gradient(circle at 25% -100px,#183858 0,transparent 360px),var(--bg); color:var(--text); }
+    button,select,input,textarea { font:inherit; }
+    button { cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+    button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible + span,summary:focus-visible { outline:3px solid var(--ring); outline-offset:3px; }
+    button:disabled { cursor:not-allowed; opacity:.5; }
+    .wrap { max-width:880px; margin:0 auto; padding:20px 16px calc(32px + env(safe-area-inset-bottom,0px)); }
+    header { display:flex; align-items:center; gap:13px; margin-bottom:24px; }
+    .logo { display:grid; place-items:center; flex:0 0 55px; height:55px; background:linear-gradient(145deg,#44d6d5,#3190b9); color:#072039; border-radius:18px; font-size:20px; font-weight:900; letter-spacing:-1px; box-shadow:0 9px 28px rgba(43,187,201,.2); }
+    .brand { min-width:0; flex:1; }
+    .brand h1 { font-size:clamp(21px,5.3vw,30px); margin:0; line-height:1.1; letter-spacing:-.6px; }
+    .brand p { margin:6px 0 0; color:var(--muted); font-size:13px; }
+    .chip { flex:none; font-size:11px; font-weight:750; border:1px solid #407d79; color:#9ef1e8; background:#174443; padding:7px 9px; border-radius:999px; }
+    .intro { margin-bottom:18px; }
+    .intro h2 { font-size:clamp(26px,6vw,38px); letter-spacing:-1px; line-height:1.17; margin:0 0 8px; }
+    .intro p { color:var(--muted); margin:0; line-height:1.55; font-size:14px; }
+    .panel { border:1px solid var(--border); background:var(--surface); border-radius:20px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,.13); }
+    .setup { display:grid; gap:16px; margin-bottom:20px; }
+    .heading { margin:0 0 11px; font-size:14px; font-weight:750; color:#e4eef9; }
+    .mode-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    .mode-option { position:relative; display:block; cursor:pointer; }
+    .mode-option input { position:absolute; opacity:0; width:1px; height:1px; }
+    .mode-option span { display:flex; flex-direction:column; justify-content:center; gap:4px; min-height:82px; padding:13px 11px; border:1px solid #3e516d; border-radius:13px; background:#1b2b46; transition:background .2s,border-color .2s; }
+    .mode-option strong { font-size:14px; }
+    .mode-option small { color:var(--muted); font-size:12px; line-height:1.35; }
+    .mode-option input:checked + span { background:#124e56; border-color:#64dbd7; box-shadow:inset 0 0 0 1px #64dbd7; }
+    .mode-option input:focus-visible + span { outline:3px solid var(--ring); outline-offset:2px; }
+    .setup-footer { display:flex; gap:12px; align-items:end; }
+    .field { display:grid; gap:7px; flex:1; min-width:120px; }
+    .field label { font-size:13px; font-weight:700; }
+    select { width:100%; height:48px; padding:0 12px; border-radius:11px; border:1px solid #4a5e7a; color:var(--text); background:#1d304c; font-size:16px; }
+    .primary { min-height:50px; padding:11px 17px; color:#092037; font-weight:800; background:linear-gradient(110deg,#76e4e0,#4cc4e2); border:0; border-radius:12px; box-shadow:0 5px 18px rgba(46,191,207,.2); }
+    .primary:active { transform:translateY(1px); }
+    .hint { margin:0; font-size:12px; line-height:1.5; color:var(--muted); }
+    .results-head { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:9px; margin-bottom:13px; }
+    .results-head h2 { margin:0 0 5px; font-size:21px; }
+    .results-head p { margin:0; font-size:12px; color:var(--muted); }
+    .legend { display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-size:12px; color:var(--muted); }
+    .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; }
+    .dot.low { background:var(--blue); }.dot.high { background:#e38f38; }
+    .ticket-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .ticket { border:1px solid #2c415b; background:linear-gradient(155deg,#192943,#122039); border-radius:16px; padding:13px 12px; min-width:0; }
+    .ticket-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; }
+    .ticket-label { font-size:13px; font-weight:750; color:#cfdfec; }
+    .ticket-id { font-size:11px; color:#8fa5bd; }
+    .balls { display:flex; align-items:center; justify-content:center; flex-wrap:nowrap; gap:clamp(3px,1.3vw,7px); }
+    .ball { display:grid; place-items:center; flex:0 1 clamp(34px,8vw,44px); width:clamp(34px,8vw,44px); aspect-ratio:1; border-radius:50%; font-size:clamp(14px,3.5vw,17px); font-weight:850; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .ball.low { background:#168ba7; color:#fff; }.ball.high { background:#d9832a; color:#fff; }
+    .group-divider { width:1px; height:23px; margin:0 2px; background:#8294aa; flex:none; }
+    .actions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:15px; }
+    .secondary { min-height:46px; background:#203551; border:1px solid #4c6480; color:#f0f6ff; font-weight:700; border-radius:11px; padding:9px 7px; font-size:13px; }
+    .secondary:active { background:#294562; }
+    .secondary.accent { border-color:#4f9c98; color:#a9f4e9; }
+    .output { margin-top:19px; }
+    .output summary { color:#bdeeee; font-weight:700; cursor:pointer; padding:7px 0; font-size:13px; }
+    textarea { resize:vertical; width:100%; min-height:170px; padding:13px; border-radius:11px; background:#0c1b2e; color:#f7fafc; border:1px solid #3c526d; font-size:14px; line-height:1.65; }
+    .history { margin-top:18px; }
+    .history h2 { margin:0 0 5px; font-size:19px; }
+    .history p { margin:0; font-size:12px; color:var(--muted); line-height:1.5; }
+    .history-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .history-list { display:grid; gap:8px; margin-top:13px; }
+    .history-item { display:flex; gap:8px; align-items:center; justify-content:space-between; background:#1a2b46; padding:11px; border:1px solid #344961; border-radius:12px; }
+    .history-item .meta { min-width:0; }
+    .history-item strong { display:block; font-size:13px; }
+    .history-item small { display:block; color:var(--muted); margin-top:4px; font-size:12px; }
+    .history-buttons { display:flex; flex-shrink:0; gap:7px; }
+    .tiny { min-width:44px; min-height:42px; border:1px solid #48607c; background:#233a57; color:#fff; border-radius:10px; padding:7px 10px; font-size:13px; }
+    .danger { color:#ffbabc; border-color:#895464; }
+    .backup-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .backup-actions .secondary { min-width:130px; padding:9px 12px; }
+    .muted-note { font-size:12px; color:var(--muted); line-height:1.6; margin:12px 0 0; }
+    .warning { border:1px solid #a98345; background:#48371f; padding:12px; border-radius:11px; font-size:12px; line-height:1.55; margin-top:12px; }
+    .empty { color:#9fb2c7; font-size:13px; padding:16px; text-align:center; border:1px dashed #3b506b; border-radius:12px; }
+    footer { padding:22px 0 0; font-size:12px; line-height:1.6; color:var(--muted); }
+    footer strong { color:#d7e3ed; }
+    .offline-info { margin:0 0 12px; padding:10px 12px; border:1px solid #3f5868; border-radius:10px; color:#b7eee7; background:#143041; }
+    #toast { position:fixed; z-index:99; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,30px); max-width:calc(100% - 28px); padding:12px 18px; background:#e8faf7; color:#143144; border-radius:13px; font-weight:700; font-size:13px; box-shadow:0 15px 35px rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; text-align:center; }
+    #toast.show { opacity:1; transform:translate(-50%,0); }
+    [hidden] { display:none !important; }
+    @media (max-width:650px) { .ticket-grid { grid-template-columns:1fr; } .wrap { padding:16px 12px calc(26px + env(safe-area-inset-bottom,0px)); } .panel { padding:14px; } .actions { grid-template-columns:repeat(2,minmax(0,1fr)); } .chip { font-size:10px; } }
+    @media (max-width:350px) { .brand p { font-size:11px; } .logo { flex-basis:47px; height:47px; border-radius:14px; font-size:17px; } .ticket { padding:12px 8px; } .balls { gap:3px; } .ball { width:34px; flex-basis:34px; font-size:14px; } .group-divider { margin:0 1px; } .mode-option span { padding:9px 8px; min-height:90px; } .setup-footer { flex-direction:column; align-items:stretch; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; } }
+    @media print { body{background:white;color:black;} .setup,.actions,.history,.output,footer,.chip{display:none;} .ticket{break-inside:avoid; background:white; color:black; border:1px solid #888;} .ticket-label,.ticket-id{color:#111;} .ball{print-color-adjust:exact;-webkit-print-color-adjust:exact;} .ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true">6/55</div>
+      <div class="brand"><h1>POWER 6/55</h1><p>Trình tạo số • tối ưu cho iPhone</p></div>
+      <span class="chip" title="Không có dữ liệu hoặc dịch vụ bên ngoài">KHÔNG TÀI KHOẢN</span>
+    </header>
+    <section class="intro" aria-label="Giới thiệu">
+      <h2>Bộ số của bạn, chỉ một chạm.</h2>
+      <p>Chọn cách tạo, nhấn nút và lưu lại ngay trên thiết bị. Không thu thập dữ liệu và không cần đăng nhập.</p>
+    </section>
+    <div id="compatNote" class="warning" role="alert">Nếu các nút không hoạt động, có thể bạn đang xem bản xem trước của ứng dụng Tệp (Quick Look) trên iPhone. Hãy mở ứng dụng qua Safari ở một địa chỉ HTTPS hoặc qua trình xem HTML hỗ trợ JavaScript.</div>
+    <section class="panel setup" aria-labelledby="setupTitle">
+      <div>
+        <h2 class="heading" id="setupTitle">Phương pháp tạo số</h2>
+        <div class="mode-options" role="radiogroup" aria-label="Phương pháp tạo bộ số">
+          <label class="mode-option"><input type="radio" name="mode" value="balanced" checked><span><strong>⚖️ Cân bằng 3–3</strong><small>3 số 01–31 và 3 số 32–55 (gốc)</small></span></label>
+          <label class="mode-option"><input type="radio" name="mode" value="uniform"><span><strong>🎲 Ngẫu nhiên 6/55</strong><small>6 số bất kỳ từ 01–55</small></span></label>
+        </div>
+      </div>
+      <div class="setup-footer">
+        <div class="field"><label for="ticketCount">Số bộ cần tạo</label><select id="ticketCount"><option value="5">5 bộ</option><option value="10" selected>10 bộ</option><option value="20">20 bộ</option><option value="50">50 bộ</option></select></div>
+        <button class="primary" type="button" id="generateBtn">🎲 Tạo bộ số mới</button>
+      </div>
+      <p class="hint">Mỗi bộ có 6 số khác nhau, sắp xếp tăng dần. Không lặp lại nguyên bộ trong cùng một lần tạo.</p>
+    </section>
+    <section aria-labelledby="resultsTitle">
+      <div class="results-head">
+        <div><h2 id="resultsTitle">Các bộ số</h2><p id="resultsMeta">Đang chuẩn bị...</p></div>
+        <div class="legend" aria-label="Chú giải"><span><i class="dot low" aria-hidden="true"></i>01–31</span><span><i class="dot high" aria-hidden="true"></i>32–55</span></div>
+      </div>
+      <div id="ticketGrid" class="ticket-grid" aria-live="polite" aria-relevant="additions text"></div>
+      <div class="actions" aria-label="Thao tác với các bộ số">
+        <button type="button" class="secondary accent" id="copyBtn">📋 Sao chép</button>
+        <button type="button" class="secondary" id="shareBtn">↗ Chia sẻ</button>
+        <button type="button" class="secondary" id="saveBtn">♡ Lưu lịch sử</button>
+        <button type="button" class="secondary" id="txtBtn">↓ Xuất TXT</button>
+      </div>
+      <details class="output"><summary>Xem danh sách dạng văn bản</summary><textarea id="textResult" readonly spellcheck="false" aria-label="Các bộ số dạng văn bản"></textarea></details>
+    </section>
+    <section class="panel history" aria-labelledby="historyTitle">
+      <div class="history-header"><div><h2 id="historyTitle">Lịch sử đã lưu</h2><p>Lưu tối đa 30 lần tạo trên thiết bị này.</p></div><span id="historyCount" class="chip">0 lần</span></div>
+      <div id="historyList" class="history-list"></div>
+      <div class="backup-actions">
+        <button type="button" id="backupBtn" class="secondary">↓ Sao lưu JSON</button>
+        <button type="button" id="importBtn" class="secondary">↑ Khôi phục JSON</button>
+        <button type="button" id="clearBtn" class="secondary danger">Xóa lịch sử</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="muted-note">Lịch sử và bộ số hiện tại được lưu cục bộ khi trình duyệt cho phép. Nên xuất file JSON để giữ bản sao khi đổi thiết bị hoặc xóa dữ liệu Safari.</p>
+      <div id="storageWarning" class="warning" hidden>Trình xem hiện tại không cho phép lưu dữ liệu lâu dài. Bạn vẫn có thể tạo số; hãy dùng “Sao chép” hoặc “Sao lưu JSON” để tránh mất dữ liệu.</div>
+    </section>
+    <footer>
+      <p id="offlineStatus" class="offline-info" role="status">Ứng dụng đang kiểm tra khả năng dùng ngoại tuyến...</p>
+      <strong>Lưu ý xác suất:</strong> Chế độ cân bằng chỉ là một cách chọn số, không làm tăng tỷ lệ trúng Jackpot. Mọi bộ 6 số hợp lệ đều có xác suất như nhau trong một kỳ quay công bằng. Bản HTML không gửi dữ liệu của bạn lên máy chủ nào.
+    </footer>
+  </main>
+  <div role="status" aria-live="polite" id="toast"></div>
+  <script>
+    (function () {
+      'use strict';
+      const STORAGE_KEY = 'power655_ios_v2';
+      const MAX_HISTORY = 30;
+      const VALID_COUNTS = [5,10,20,50];
+      const $ = id => document.getElementById(id);
+      const state = {mode:'balanced',count:10,selectionMode:'balanced',selectionCount:10,tickets:[],createdAt:null,history:[]};
+      let storageReady = false;
+      let toastTimer = null;
+
+      function notify(message) {
+        const el = $('toast'); el.textContent = message; el.classList.add('show');
+        if (toastTimer !== null) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+      }
+      function formatNum(value) { return String(value).padStart(2,'0'); }
+      function formatTime(iso) {
+        try { return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso)); }
+        catch (_) { return String(iso || ''); }
+      }
+      function safeMode(mode) { return mode === 'uniform' ? 'uniform' : 'balanced'; }
+      function safeCount(count) { return VALID_COUNTS.includes(Number(count)) ? Number(count) : 10; }
+      function isTicket(ticket, mode) {
+        if (!Array.isArray(ticket) || ticket.length !== 6 || !ticket.every(n => Number.isInteger(n) && n >= 1 && n <= 55)) return false;
+        if (new Set(ticket).size !== 6 || ticket.some((n,i) => i && n <= ticket[i-1])) return false;
+        return mode !== 'balanced' || ticket.filter(n => n <= 31).length === 3;
+      }
+      function isSession(session) {
+        if (!session || typeof session !== 'object' || !['uniform','balanced'].includes(session.mode) || !VALID_COUNTS.includes(session.count)) return false;
+        if (!Array.isArray(session.tickets) || session.tickets.length !== session.count || !session.tickets.every(t => isTicket(t,session.mode))) return false;
+        return new Set(session.tickets.map(t => t.join(','))).size === session.tickets.length;
+      }
+      function normalizeHistory(input) {
+        if (!Array.isArray(input)) return [];
+        const known = new Set();
+        return input.filter(item => {
+          if (!isSession(item)) return false;
+          const key = item.tickets.map(t => t.join(',')).join('|');
+          if (known.has(key)) return false;
+          known.add(key); return true;
+        }).slice(0,MAX_HISTORY).map(item => ({id:String(item.id || Date.now()),mode:item.mode,count:item.count,createdAt:item.createdAt || new Date().toISOString(),tickets:item.tickets}));
+      }
+      function checkStorage() {
+        try { const key = STORAGE_KEY+'_probe'; localStorage.setItem(key,'1'); localStorage.removeItem(key); return true; }
+        catch (_) { return false; }
+      }
+      function persist() {
+        if (!storageReady) return;
+        try { localStorage.setItem(STORAGE_KEY,JSON.stringify({version:2,mode:state.mode,count:state.count,selectionMode:state.selectionMode,selectionCount:state.selectionCount,tickets:state.tickets,createdAt:state.createdAt,history:state.history})); }
+        catch (_) { storageReady=false; $('storageWarning').hidden=false; }
+      }
+      // getRandomValues provides better random bits than Math.random where the Web Crypto API is available.
+      function randomBelow(max) {
+        if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === 'function') {
+          const values = new Uint32Array(1);
+          const range = 4294967296;
+          const limit = Math.floor(range / max) * max;
+          let sample;
+          do { globalThis.crypto.getRandomValues(values); sample = values[0]; } while (sample >= limit);
+          return sample % max;
+        }
+        // Only for older/incompatible local HTML viewers; still produces valid tickets.
+        return Math.floor(Math.random()*max);
+      }
+      function selectUnique(n,low,high) {
+        const pool = Array.from({length:high-low+1},(_,i) => low+i);
+        for (let i=0;i<n;i++) {
+          const j = i+randomBelow(pool.length-i);
+          const tmp=pool[i]; pool[i]=pool[j]; pool[j]=tmp;
+        }
+        return pool.slice(0,n).sort((a,b)=>a-b);
+      }
+      function generateOne(mode) {
+        return mode === 'balanced'
+          ? selectUnique(3,1,31).concat(selectUnique(3,32,55))
+          : selectUnique(6,1,55);
+      }
+      function generateBatch(auto) {
+        state.mode=state.selectionMode; state.count=state.selectionCount;
+        const seen=new Set(),tickets=[];
+        while (tickets.length < state.count) {
+          const t=generateOne(state.mode), key=t.join(',');
+          if (!seen.has(key)) { seen.add(key); tickets.push(t); }
+        }
+        state.tickets=tickets; state.createdAt=new Date().toISOString();
+        render(); persist();
+        if (!auto) notify('Đã tạo '+state.count+' bộ không trùng nhau');
+      }
+      function textOutput(session) {
+        return session.tickets.map((ticket,i)=>'Bộ '+formatNum(i+1)+':  '+ticket.map(formatNum).join(' - ')).join('\n');
+      }
+      function currentSession() {
+        return {id:'s'+Date.now(),mode:state.mode,count:state.tickets.length,createdAt:state.createdAt,tickets:state.tickets.map(t=>t.slice())};
+      }
+      function makeBall(n) {
+        const el=document.createElement('span'); el.className='ball '+(n<=31?'low':'high');
+        el.textContent=formatNum(n); return el;
+      }
+      function renderTickets() {
+        const grid=$('ticketGrid'), fragment=document.createDocumentFragment();
+        state.tickets.forEach((nums,index) => {
+          const article=document.createElement('article'); article.className='ticket';
+          article.setAttribute('aria-label','Bộ '+(index+1)+': '+nums.map(formatNum).join(', '));
+          const top=document.createElement('div'); top.className='ticket-top';
+          const label=document.createElement('span'); label.className='ticket-label'; label.textContent='BỘ '+formatNum(index+1);
+          const sub=document.createElement('span'); sub.className='ticket-id'; sub.textContent='POWER 6/55';
+          top.append(label,sub); article.appendChild(top);
+          const balls=document.createElement('div'); balls.className='balls';
+          nums.forEach((n,i)=> {
+            if (i && nums[i-1]<=31 && n>=32) {
+              const divider=document.createElement('span'); divider.className='group-divider'; divider.setAttribute('aria-hidden','true'); balls.appendChild(divider);
+            }
+            balls.appendChild(makeBall(n));
+          });
+          article.appendChild(balls); fragment.appendChild(article);
+        });
+        grid.replaceChildren(fragment);
+      }
+      function modeLabel(mode) { return mode === 'balanced' ? 'Cân bằng 3–3' : 'Ngẫu nhiên 6/55'; }
+      function renderHistory() {
+        const list=$('historyList'); list.replaceChildren();
+        $('historyCount').textContent=state.history.length+' lần';
+        if (!state.history.length) {
+          const empty=document.createElement('div'); empty.className='empty'; empty.textContent='Chưa có lịch sử. Nhấn “Lưu lịch sử” để giữ một lần tạo.';
+          list.appendChild(empty); return;
+        }
+        state.history.forEach(item=>{
+          const el=document.createElement('div'); el.className='history-item';
+          const meta=document.createElement('div'); meta.className='meta';
+          const title=document.createElement('strong'); title.textContent=formatTime(item.createdAt);
+          const desc=document.createElement('small'); desc.textContent=item.count+' bộ • '+modeLabel(item.mode);
+          meta.append(title,desc);
+          const buttons=document.createElement('div'); buttons.className='history-buttons';
+          const load=document.createElement('button'); load.className='tiny'; load.textContent='Mở'; load.type='button'; load.setAttribute('aria-label','Mở lịch sử '+formatTime(item.createdAt));
+          load.addEventListener('click',()=>loadSession(item));
+          const remove=document.createElement('button'); remove.className='tiny danger'; remove.textContent='Xóa'; remove.type='button'; remove.setAttribute('aria-label','Xóa lịch sử '+formatTime(item.createdAt));
+          remove.addEventListener('click',()=>{ state.history=state.history.filter(entry=>entry.id!==item.id); persist(); renderHistory(); notify('Đã xóa lần lưu'); });
+          buttons.append(load,remove); el.append(meta,buttons); list.appendChild(el);
+        });
+      }
+      function render() {
+        document.querySelectorAll('input[name="mode"]').forEach(input=>{input.checked=input.value===state.selectionMode;});
+        $('ticketCount').value=String(state.selectionCount);
+        const desc=state.tickets.length+' bộ • '+modeLabel(state.mode)+(state.createdAt?' • '+formatTime(state.createdAt):'');
+        $('resultsMeta').textContent=desc;
+        $('textResult').value=textOutput(state);
+        renderTickets(); renderHistory();
+      }
+      function loadSession(session) {
+        if (!isSession(session)) {notify('Dữ liệu lịch sử không hợp lệ'); return;}
+        state.mode=session.mode;state.count=session.count;state.selectionMode=session.mode;state.selectionCount=session.count;state.tickets=session.tickets.map(t=>t.slice());state.createdAt=session.createdAt;
+        render();persist();document.querySelector('#resultsTitle').scrollIntoView({behavior:'smooth',block:'start'});
+        notify('Đã mở '+session.count+' bộ số');
+      }
+      function saveCurrent() {
+        if (!state.tickets.length) return;
+        const session=currentSession(), fingerprint=textOutput(session);
+        if (state.history.some(x=>textOutput(x)===fingerprint && x.mode===session.mode)) { notify('Bộ số này đã có trong lịch sử'); return; }
+        state.history.unshift(session); state.history=state.history.slice(0,MAX_HISTORY);
+        persist(); renderHistory(); notify('Đã lưu vào lịch sử trên thiết bị');
+      }
+      async function copyText() {
+        const str=textOutput(state);
+        try {
+          if (navigator.clipboard && typeof navigator.clipboard.writeText==='function') { await navigator.clipboard.writeText(str); notify('Đã sao chép '+state.tickets.length+' bộ'); return true; }
+        } catch (_) { /* Fall through. */ }
+        const textarea=$('textResult');
+        const wasOpen=textarea.closest('details'); if(wasOpen) wasOpen.open=true;
+        textarea.focus();textarea.select();textarea.setSelectionRange(0,textarea.value.length);
+        try { if (document.execCommand('copy')) { notify('Đã sao chép '+state.tickets.length+' bộ'); return true; }} catch (_) { }
+        notify('Hãy giữ để chọn rồi sao chép danh sách bên dưới'); return false;
+      }
+      async function shareTickets() {
+        const text=textOutput(state);
+        if (navigator.share) {
+          try { await navigator.share({title:'Power 6/55',text}); return; }
+          catch (error) { if (error && error.name==='AbortError') return; }
+        }
+        await copyText();
+      }
+      function downloadFile(filename,text,mime) {
+        const blob=new Blob([text],{type:mime}); const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),15000);
+      }
+      function dateSlug() {
+        const d=new Date();const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString();
+        return local.slice(0,16).replace('T','_').replace(':','-');
+      }
+      function exportText() {downloadFile('Power655_'+dateSlug()+'.txt','\ufeff'+textOutput(state),'text/plain;charset=utf-8');notify('Đã yêu cầu xuất file TXT');}
+      function exportBackup() {
+        const data={schema:'power655-backup-v2',savedAt:new Date().toISOString(),current:currentSession(),history:state.history};
+        downloadFile('Power655_SaoLuu_'+dateSlug()+'.json',JSON.stringify(data,null,2),'application/json;charset=utf-8');
+        notify('Đã yêu cầu xuất bản sao JSON');
+      }
+      async function importBackup(file) {
+        if (!file) return;
+        if (file.size>2*1024*1024) {notify('File sao lưu quá lớn (tối đa 2 MB)');return;}
+        try {
+          const raw=await file.text();const data=JSON.parse(raw);
+          if (!data || data.schema!=='power655-backup-v2') throw new Error('wrong-schema');
+          const imported=normalizeHistory(data.history),previous=state.history;
+          state.history=normalizeHistory(imported.concat(previous));
+          if (isSession(data.current)) {
+            state.mode=data.current.mode;state.count=data.current.count;
+            state.tickets=data.current.tickets.map(t=>t.slice());state.createdAt=data.current.createdAt;
+          }
+          persist();render();notify('Đã khôi phục '+imported.length+' mục sao lưu');
+        } catch (_) {notify('Không thể đọc file JSON sao lưu hợp lệ');}
+      }
+      function initialize() {
+        $('compatNote').hidden=true;
+        storageReady=checkStorage();$('storageWarning').hidden=storageReady;
+        if (storageReady) {
+          try {
+            const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+            if (stored && typeof stored==='object') {
+              state.mode=safeMode(stored.mode);state.count=safeCount(stored.count);
+              state.selectionMode=safeMode(stored.selectionMode || state.mode); state.selectionCount=safeCount(stored.selectionCount || state.count);
+              state.history=normalizeHistory(stored.history);
+              if (isSession({mode:state.mode,count:state.count,tickets:stored.tickets})) {
+                state.tickets=stored.tickets.map(t=>t.slice()); state.createdAt=stored.createdAt||new Date().toISOString();
+              }
+            }
+          } catch (_) { /* Use defaults for malformed storage. */ }
+        }
+        document.querySelectorAll('input[name="mode"]').forEach(input=>input.addEventListener('change',()=>{state.selectionMode=safeMode(input.value);persist();}));
+        $('ticketCount').addEventListener('change',()=>{state.selectionCount=safeCount($('ticketCount').value);persist();});
+        $('generateBtn').addEventListener('click',()=>generateBatch(false));
+        $('copyBtn').addEventListener('click',copyText);
+        $('shareBtn').addEventListener('click',shareTickets);
+        $('saveBtn').addEventListener('click',saveCurrent);
+        $('txtBtn').addEventListener('click',exportText);
+        $('backupBtn').addEventListener('click',exportBackup);
+        $('importBtn').addEventListener('click',()=>$('importFile').click());
+        $('importFile').addEventListener('change',async evt=>{await importBackup(evt.target.files[0]);evt.target.value='';});
+        $('clearBtn').addEventListener('click',()=>{
+          if (!state.history.length) {notify('Lịch sử đang trống');return;}
+          if (confirm('Xóa toàn bộ lịch sử đã lưu trên thiết bị này?')) {state.history=[];persist();renderHistory();notify('Đã xóa lịch sử');}
+        });
+        if (state.tickets.length) render(); else generateBatch(true);
+        if ('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')) {
+          $('offlineStatus').textContent='Đang cài bộ nhớ đệm offline...';
+          window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js')
+            .then(()=>navigator.serviceWorker.ready)
+            .then(()=>{$('offlineStatus').textContent='✓ Đã sẵn sàng chạy offline sau lần mở đầu tiên (khi dữ liệu cache còn trên máy).';})
+            .catch(()=>{$('offlineStatus').textContent='Chưa kích hoạt offline: hãy sử dụng gói PWA đầy đủ qua HTTPS.';}));
+        } else {
+          $('offlineStatus').textContent='Bản HTML độc lập: có thể chạy không cần mạng nếu mở bằng trình duyệt / trình xem hỗ trợ JavaScript.';
+        }
+      }
+      initialize();
+    })();
+  </script>
+</body>
+</html>
